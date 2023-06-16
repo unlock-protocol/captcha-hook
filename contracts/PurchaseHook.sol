@@ -3,21 +3,28 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV12.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract PurchaseHook {
-    address public secretSigner;
+contract PurchaseHook is Ownable {
+    mapping(address => bool) public signers;
 
-    constructor(address _secretSigner) {
-        secretSigner = _secretSigner;
+    constructor() {}
+
+    function addSigner(address signer) public onlyOwner {
+        signers[signer] = true;
+    }
+
+    function removeSigner(address signer) public onlyOwner {
+        signers[signer] = false;
     }
 
     /**
      * Price is the same for everyone... but we fail if signature by Unlock Lab's backend service (sent as signature) does not match!
      */
     function keyPurchasePrice(
-        address, /* from */
+        address /* from */,
         address recipient,
-        address, /* referrer */
+        address /* referrer */,
         bytes calldata signature /* data */
     ) external view returns (uint256 minKeyPrice) {
         string memory message = toString(recipient);
@@ -39,7 +46,7 @@ contract PurchaseHook {
         bytes32 messageHash = keccak256(encoded);
         bytes32 hash = ECDSA.toEthSignedMessageHash(messageHash);
         address recoveredAddress = ECDSA.recover(hash, signature);
-        return recoveredAddress == secretSigner;
+        return signers[recoveredAddress];
     }
 
     /**
@@ -74,13 +81,12 @@ contract PurchaseHook {
      * No-op but required
      */
     function onKeyPurchase(
-        uint256, /* tokenId */
-        address, /*from*/
-        address, /*recipient*/
-        address, /*referrer*/
-        bytes calldata, /*data*/
-        uint256, /*minKeyPrice*/
+        uint256 /* tokenId */,
+        address /*from*/,
+        address /*recipient*/,
+        address /*referrer*/,
+        bytes calldata /*data*/,
+        uint256 /*minKeyPrice*/,
         uint256 /*pricePaid*/
-    ) external {
-    }
+    ) external {}
 }

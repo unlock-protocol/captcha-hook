@@ -8,9 +8,10 @@ describe("PurchaseHook", function () {
     const sender = "0xF5C28ce24Acf47849988f147d5C75787c0103534".toLowerCase()
 
     const PurchaseHook = await ethers.getContractFactory("PurchaseHook");
-    const hook = await PurchaseHook.deploy(secretSigner.address);
+    const hook = await PurchaseHook.deploy();
     await hook.deployed();
 
+    await hook.addSigner(secretSigner.address)
 
     // signing wrong message
     expect(await hook.checkIsSigner(sender, await secretSigner.signMessage("hello"))).to.equal(false);
@@ -26,7 +27,7 @@ describe("PurchaseHook", function () {
       [message.toLowerCase()]
     )
     const signedMessage = await secretSigner.signMessage(ethers.utils.arrayify(messageHash))
-    expect(ethers.utils.verifyMessage(message, signedMessage), secretSigner.address)
+    expect(ethers.utils.verifyMessage(message, signedMessage),)
     expect(await hook.checkIsSigner(message, signedMessage)).to.equal(true);
   });
 
@@ -47,8 +48,10 @@ describe("PurchaseHook", function () {
     })
 
     const PurchaseHook = await ethers.getContractFactory("PurchaseHook");
-    const hook = await PurchaseHook.deploy(secretSigner.address);
+    const hook = await PurchaseHook.deploy();
     await hook.deployed();
+
+    await hook.addSigner(secretSigner.address)
 
     // Set the hook on avatar
     await (await lock.setEventHooks(
@@ -76,7 +79,7 @@ describe("PurchaseHook", function () {
 
 
     // Health check!
-    expect(ethers.utils.verifyMessage(user.address.toLowerCase(), signedMessage), secretSigner.address)
+    expect(ethers.utils.verifyMessage(user.address.toLowerCase(), signedMessage),)
     expect(await hook.checkIsSigner(user.address.toLowerCase(), signedMessage)).to.equal(true);
 
     // Let's now purchase a key!

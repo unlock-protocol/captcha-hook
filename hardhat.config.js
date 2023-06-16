@@ -1,20 +1,24 @@
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
 require("@unlock-protocol/hardhat-plugin");
-const unlockNetworks = require('@unlock-protocol/networks').networks
+const networks = require('@unlock-protocol/networks').networks
 
 
-const networks = Object.keys(unlockNetworks).reduce((prev, current) => {
-  const network = unlockNetworks[current]
+let accounts = []
+if (process.env.PKEY) {
+  accounts.push(process.env.PKEY)
+}
+
+const networksByNames = Object.keys(networks).reduce((acc, networkId) => {
+  const network = networks[networkId]
   return {
-    ...prev,
+    ...acc,
     [network.chain]: {
+      accounts,
       url: network.provider,
-      accounts: process.env.PKEY ? [process.env.PKEY] : []
-    }
+    },
   }
 }, {})
-
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
@@ -31,19 +35,18 @@ module.exports = {
       runs: 200,
     },
   },
-  networks,
+  networks: networksByNames,
   etherscan: {
     apiKey: {
+      arbitrumOne: 'W5XNFPZS8D6JZ5AXVWD4XCG8B5ZH5JCD4Y',
+      gnosis: 'BSW3C3NDUUBWSQZJ5FUXBNXVYX92HZDDCV',
       polygon: 'W9TVEYKW2CDTQ94T3A2V93IX6U3IHQN5Y3',
       goerli: 'HPSH1KQDPJTNAPU3335G931SC6Y3ZYK3BF',
       mainnet: 'HPSH1KQDPJTNAPU3335G931SC6Y3ZYK3BF',
+      rinkeby: 'HPSH1KQDPJTNAPU3335G931SC6Y3ZYK3BF',
       bsc: '6YUDRP3TFPQNRGGZQNYAEI1UI17NK96XGK',
-      gnosis: 'BSW3C3NDUUBWSQZJ5FUXBNXVYX92HZDDCV',
+      xdai: 'api-key',
       optimisticEthereum: 'V51DWC44XURIGPP49X85VZQGH1DCBAW5EC',
-      arbitrumOne: 'W5XNFPZS8D6JZ5AXVWD4XCG8B5ZH5JCD4Y',
-      polygonMumbai: 'W9TVEYKW2CDTQ94T3A2V93IX6U3IHQN5Y3',
-      avalanche: 'N4AF8AYN8PXY2MFPUT8PAFSZNVJX5Q814X',
-      celo: '6KBKUFYV3NQR4Y1BQN3Q34S2U7NTZBBPQZ',
-    }
+    },
   },
 };
